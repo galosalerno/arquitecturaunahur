@@ -1,0 +1,120 @@
+// Variables Globales
+variables:
+    palabras = []                 // Lista de palabras disponibles para adivinar
+    palabra_seleccionada          // Palabra actual que se debe adivinar
+    intentos_restantes            // Número de intentos restantes antes de perder
+    intentos_totales = 7          // Número total de intentos permitidos (ajustable)
+    errores_cometidos = 0         // Número de errores cometidos hasta el momento
+    ranking = []                  // Lista de los tres últimos jugadores
+    mapa                          // Matriz que representa el estado gráfico del ahorcado
+    jugador                       // Nombre del jugador actual
+    letras_adivinadas = []        // Lista de letras adivinadas correctamente
+    letras_erradas = []           // Lista de letras erradas
+    cuerda_x, cuerda_y            // Coordenadas de la cuerda que sostiene el ahorcado
+
+// leer_palabras: Leer palabras del archivo y guardarlas en una lista
+subrutina leer_palabras():
+    abrir archivo "palabras.txt"
+    para cada línea en el archivo:
+        agregar la palabra a la lista "palabras"
+    cerrar el archivo
+
+// sortear_palabra: Elige una palabra al azar de una lista de palabras disponibles
+subrutina sortear_palabra():
+    seleccionar una palabra aleatoria de la lista "palabras"
+    asignar la palabra seleccionada a "palabra_seleccionada"
+
+// imprimir_mapa: Para imprimir el mapa inicial y luego durante la jugada con todos los datos actualizados
+subrutina imprimir_mapa():
+    imprimir la matriz "mapa"
+    imprimir el número de intentos restantes
+    imprimir las letras adivinadas y las letras erradas
+
+// leer_letra: Para leer la letra que elige el jugador
+subrutina leer_letra():
+    solicitar al jugador que ingrese una letra
+    leer la letra ingresada
+    retornar la letra
+
+// comprobar_letra: Para determinar si la letra elegida pertenece a la palabra oculta
+subrutina comprobar_letra(letra):
+    si la letra está en "palabra_seleccionada":
+        agregar la letra a "letras_adivinadas"
+        retornar verdadero
+    sino:
+        agregar la letra a "letras_erradas"
+        incrementar "errores_cometidos"
+        restar 1 a "intentos_restantes"
+        retornar falso
+
+// resultado_intento: Dibuja parte del ahorcado o escribe la letra adivinada
+subrutina resultado_intento(letra):
+    si la letra está en la palabra:
+        actualizar el "mapa" con la letra correcta
+    sino:
+        dibujar una parte del ahorcado en el "mapa"
+
+// informar_resultado: Para informar por pantalla si hay ganador (se adivinó la palabra) o si el juego terminó por la cantidad de vidas (intentos)
+subrutina informar_resultado():
+    si "intentos_restantes" es igual a 0:
+        imprimir "Has perdido. La palabra era: " + "palabra_seleccionada"
+        ofrecer jugar la segunda parte (La Puntería)
+    sino si todas las letras de "palabra_seleccionada" están en "letras_adivinadas":
+        calcular el puntaje como "intentos_totales" - "errores_cometidos"
+        imprimir "Has ganado! Tu puntaje es: " + puntaje
+        solicitar nombre del jugador y actualizar el ranking
+        grabar el ranking
+    ofrecer jugar de nuevo o salir
+
+// leer_ranking: Lee de un archivo ranking.txt, si aún nadie jugó el archivo se encuentra vacío
+subrutina leer_ranking():
+    abrir archivo "ranking.txt"
+    si el archivo no está vacío:
+        para cada línea en el archivo:
+            leer el nombre y puntaje del jugador
+            agregar al "ranking"
+    cerrar el archivo
+
+// mostrar_ranking: Muestra el ranking mostrado hasta el momento
+subrutina mostrar_ranking():
+    imprimir "Ranking de los últimos tres jugadores:"
+    para cada jugador en "ranking":
+        imprimir el nombre y puntaje
+
+// grabar_ranking: En el momento que se cierra el juego se graba el ranking actualizado
+subrutina grabar_ranking():
+    abrir archivo "ranking.txt"
+    para cada jugador en "ranking":
+        escribir el nombre y puntaje en el archivo
+    cerrar el archivo
+
+// segunda_parte: Ofrece la posibilidad de salvar al ahorcado con la puntería
+subrutina segunda_parte():
+    solicitar coordenadas (x, y) del disparo
+    si (x, y) coincide con (cuerda_x, cuerda_y):
+        imprimir "¡Has salvado al ahorcado!"
+    sino:
+        imprimir "El disparo falló. Has perdido."
+    ofrecer jugar de nuevo o salir
+
+// Programa Principal
+inicio del programa:
+    leer_palabras()
+    leer_ranking()
+    mientras el jugador quiera jugar:
+        solicitar nombre del jugador
+        mostrar_ranking()
+        sortear_palabra()
+        inicializar variables de juego (intentos_restantes = intentos_totales, errores_cometidos = 0, letras_adivinadas = [], letras_erradas = [])
+        mientras no se adivine la palabra y "intentos_restantes" > 0:
+            imprimir_mapa()
+            letra = leer_letra()
+            si comprobar_letra(letra):
+                resultado_intento(letra)
+        informar_resultado()
+        si "intentos_restantes" == 0:
+            segunda_parte()
+    grabar_ranking()
+fin del programa
+
+
